@@ -1,3 +1,5 @@
 core
 *.o
 *delme*
+*.swp
+avltest
