@@ -7,6 +7,7 @@
  *******************************************************/
 
 #include <stdlib.h>
+#include <stdio.h>
 #include "avltree.h"
 
 #define MAX_INT(a,b)  ((a) > (b) ? (a) : (b))
@@ -60,6 +61,8 @@ void tree_destroy(PTREE ptree)
     }
 
     tree_destroy_eachnode(ptree->proot,ptree->pfndel);
+
+    free(ptree);
 }
 
 BOOL tree_insert(PTREE ptree, void *pnewdata)
@@ -133,3 +136,37 @@ int32_t tree_height(PTREE ptree)
 
 }
 
+
+void tree_preorder(FILE *fp, PTREENODE pnode)
+{
+   if(!pnode) return;
+
+  if(pnode->pchild[LCHILD]) {
+       fprintf(fp,"%d -> %d\n",(int32_t)pnode->pdata, (int32_t)pnode->pchild[LCHILD]->pdata);
+   }
+
+   if(pnode->pchild[RCHILD]) {
+        fprintf(fp,"%d -> %d\n",(int32_t)pnode->pdata, (int32_t)pnode->pchild[RCHILD]->pdata);
+   }
+
+   fprintf(fp,"%d [label=\"%d\\nparent=%d\\nht=%d, lchild_ht=%d,   rchild_ht=%d\"]\n",(uint32_t)pnode->pdata,(uint32_t)pnode->pdata,(uint32_t)(pnode->pparent ? pnode->pparent->pdata : NULL),pnode->height,pnode->child_height[LCHILD], pnode->child_height[RCHILD]);
+
+   if(pnode->pparent)
+     fprintf(fp,"%d -> %d\n",(int32_t)pnode->pdata,(int32_t)pnode->pparent->pdata);
+
+   tree_preorder(fp, pnode->pchild[LCHILD]);
+   tree_preorder(fp, pnode->pchild[RCHILD]);
+ 
+}
+
+int32_t tree_dump(PTREE ptree)
+{
+   FILE *fp = fopen("avltree.dot","w");
+ 
+   fprintf(fp,"digraph avltree {\n"); 
+   tree_preorder(fp,ptree->proot); 
+   fprintf(fp,"}\n");
+
+   fclose(fp);
+
+}

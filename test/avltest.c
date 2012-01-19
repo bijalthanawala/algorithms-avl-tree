@@ -25,6 +25,8 @@ void main()
                i,tree_height(ptree));
     }
 
+    tree_dump(ptree);
+
     tree_destroy(ptree);
 
 }
