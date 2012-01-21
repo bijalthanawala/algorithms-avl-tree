@@ -21,25 +21,28 @@
 #define RCHILD 1
 
 
-#define TREE_NODE_FLAG_ROOT    0x0001
-#define TREE_NODE_FLAG_LCHILD  0x0002
-#define TREE_NODE_FLAG_RCHILD  0x0004
+typedef enum {
+  TREE_NODE_UNKNOWN,  
+  TREE_NODE_ROOT,
+  TREE_NODE_LCHILD,
+  TREE_NODE_RCHILD
+} TREE_NODE_TYPE;
 
 #define SET_ROOT(ptreenode) { \
-                             ptreenode->flags |= TREE_NODE_FLAG_ROOT; \
+                             ptreenode->nodetype = TREE_NODE_ROOT; \
                            }
 
 #define SET_LCHILD(ptreenode) { \
-                               ptreenode->flags |= TREE_NODE_FLAG_LCHILD; \
+                               ptreenode->nodetype = TREE_NODE_LCHILD; \
                              }
 
 #define SET_RCHILD(ptreenode) { \
-                               ptreenode->flags |= TREE_NODE_FLAG_RCHILD; \
+                               ptreenode->nodetype = TREE_NODE_RCHILD; \
                              }
 
-#define IS_ROOT(ptreenode)        (ptreenode->flags & TREE_NODE_FLAG_ROOT)
-#define IS_THIS_LCHILD(ptreenode) (ptreenode->flags & TREE_NODE_FLAG_LCHILD)
-#define IS_THIS_RCHILD(ptreenode) (ptreenode->flags & TREE_NODE_FLAG_RCHILD)
+#define IS_ROOT(ptreenode)        (ptreenode->nodetype == TREE_NODE_ROOT)
+#define IS_THIS_LCHILD(ptreenode) (ptreenode->nodetype == TREE_NODE_LCHILD)
+#define IS_THIS_RCHILD(ptreenode) (ptreenode->nodetype == TREE_NODE_RCHILD)
 #define HAS_LCHILD(ptreenode)     (!(ptreenode->pchild[LCHILD] == NULL)
 #define HAS_RCHILD(ptreenode)     (!(ptreenode->pchild[RCHILD]) == NULL)
 #define GET_LCHILD(ptreenode)     (ptreenode->pchild[LCHILD])
@@ -51,9 +54,9 @@ typedef struct treenode {
     void *pdata;
     uint32_t height;
     struct treenode *pparent;
-    uint16_t flags;
+    TREE_NODE_TYPE nodetype;
     struct treenode *pchild[NUMBER_CHILD_BINARY_TREE];    
-    uint32_t child_height[NUMBER_CHILD_BINARY_TREE];
+    /*uint32_t child_height[NUMBER_CHILD_BINARY_TREE];*/
 } TREENODE, *PTREENODE;
 
 
@@ -87,6 +90,7 @@ PTREE tree_init(uint16_t attributes,
 void tree_destroy(PTREE ptree);
 BOOL tree_insert(PTREE ptree, void *pdata);
 int32_t tree_height(PTREE ptree);
+int32_t tree_dump(PTREE ptree,char *filename);
 
 
 #endif

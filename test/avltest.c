@@ -18,14 +18,16 @@ void main()
 
     PTREE ptree = tree_init(0,cmp_int,NULL);
     int i;
+    char filename[100];
 
     for(i=100;i<110;i++) {
        tree_insert(ptree, (void *)i);
        printf("After inserting data=%d, tree ht = %d\n",
                i,tree_height(ptree));
+    sprintf(filename,"avltree.%d.dot",i);   
+    tree_dump(ptree,filename);
     }
 
-    tree_dump(ptree);
 
     tree_destroy(ptree);
 
