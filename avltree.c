@@ -148,13 +148,19 @@ BOOL tree_insert(PTREE ptree, void *pnewdata)
             p = NULL;
         }
         else {
-            if((gp != NULL) && (p != NULL)) {
-                c = pwalknode;
-            } else
-                if(gp != NULL) {
+            if(gp != NULL) {
+
+                if(p == NULL) {
                     p = pwalknode;
+                    c = NULL;
+                } 
+                else {
+                    c = pwalknode;
                 }
-        }
+
+            }
+
+       }
 
     } /* End: while() loop - Traversal ends */
 
@@ -331,7 +337,7 @@ BOOL left_rotate(PTREE ptree, PTREENODE p, PTREENODE c)
 
 
     /* Now update the heights of all affected nodes, in the
-       right order */
+       correct order */
     p->height = MAX_INT(p->pchild[LCHILD] ? p->pchild[LCHILD]->height : 0,
                         p->pchild[RCHILD] ? p->pchild[RCHILD]->height : 0)+1; 
     c->height = MAX_INT(c->pchild[LCHILD] ? c->pchild[LCHILD]->height : 0,
@@ -388,7 +394,7 @@ BOOL right_rotate(PTREE ptree, PTREENODE p, PTREENODE c)
 
 
    /* Now update the heights of all affected nodes, in the
-       right order */
+       correct order */
     p->height = MAX_INT(p->pchild[LCHILD] ? p->pchild[LCHILD]->height : 0,
                         p->pchild[RCHILD] ? p->pchild[RCHILD]->height : 0)+1; 
     c->height = MAX_INT(c->pchild[LCHILD] ? c->pchild[LCHILD]->height : 0,

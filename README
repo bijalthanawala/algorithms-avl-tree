@@ -1,5 +1,11 @@
 Project: avl-tree
 Intention: Implement generic AVL tree
 
--- WORK IN PROGRESS --
---  Read TODO file  --
+Current status:
+Simple testcases : PASS
+
+Pending:
+Extensive testcases: TODO
+
+
+--  Read TODO file for more information --
