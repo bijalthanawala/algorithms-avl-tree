@@ -105,11 +105,6 @@ BOOL tree_insert(PTREE ptree, void *pnewdata)
     pnewnode->nodetype = TREE_NODE_UNKNOWN;
     pnewnode->pchild[LCHILD] = NULL;
     pnewnode->pchild[RCHILD] = NULL;
-    /*
-    pnewnode->child_height[LCHILD] = 0;
-    pnewnode->child_height[RCHILD] = 0;
-     */
-
 
     /* Check if the new node is the root */
     if(! ptree->proot) {
@@ -137,42 +132,28 @@ BOOL tree_insert(PTREE ptree, void *pnewdata)
         /* Turn left/right as comparisons lead */
         if(cmpresult == CMP_RESULT_A_LARGER ||
            cmpresult == CMP_RESULT_A_B_SAME) {
-            /*pwalknode->child_height[LCHILD]++;*/
             insertpt = &pwalknode->pchild[LCHILD];
             SET_LCHILD(pnewnode);
         } 
         else {
-            /*pwalknode->child_height[RCHILD]++;*/
             insertpt = &pwalknode->pchild[RCHILD];
             SET_RCHILD(pnewnode);
         }
 
         /* Update height of each node while traversing */
-        /*pwalknode->height = MAX_INT(pwalknode->child_height[LCHILD], 
-                                pwalknode->child_height[RCHILD]) + 1; */
         pwalknode->height++;
 
         if(is_balance_violated(pwalknode,IS_THIS_LCHILD(pnewnode))) {
             gp = pwalknode;
+            p = NULL;
         }
         else {
-
-            if((gp != NULL) && (p!=NULL) && (c!=NULL)) {
-              fprintf(stderr,"Unexpected Error: Traversal continues long "\
-                             "after balance factor violation\n");
-              assert(FALSE);
-            } else
             if((gp != NULL) && (p != NULL)) {
                 c = pwalknode;
-                fprintf(stderr, 
-                       "Unexpected Error: Traversal finds child after bal. " \
-                       "factor violation\n");
-             /*assert(FALSE);*/
-
             } else
-            if(gp != NULL) {
-                p = pwalknode;
-            }
+                if(gp != NULL) {
+                    p = pwalknode;
+                }
         }
 
     } /* End: while() loop - Traversal ends */

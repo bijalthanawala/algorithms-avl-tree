@@ -6,6 +6,8 @@ TODO List
 * Make avltree.h (header file facing the user) opaque
 * Remove the hack in tree_dump() (and other places) that prints the 'data' directly
 * Write extensive testcases
+* Formalize debug message control
+* Remove old commented code
 
 Done
 ----

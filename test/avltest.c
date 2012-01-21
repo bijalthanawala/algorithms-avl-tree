@@ -20,7 +20,7 @@ void main()
     int i;
     char filename[100];
 
-    for(i=100;i<110;i++) {
+    for(i=1;i<=257;i++) {
        tree_insert(ptree, (void *)i);
        printf("After inserting data=%d, tree ht = %d\n",
                i,tree_height(ptree));
