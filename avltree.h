@@ -51,12 +51,11 @@ typedef enum {
 
 
 typedef struct treenode {
-    void *pdata;
+    void *data_ptr;
     uint32_t height;
     struct treenode *pparent;
     TREE_NODE_TYPE nodetype;
     struct treenode *pchild[NUMBER_CHILD_BINARY_TREE];    
-    /*uint32_t child_height[NUMBER_CHILD_BINARY_TREE];*/
 } TREENODE, *PTREENODE;
 
 
@@ -70,6 +69,7 @@ typedef enum {
 
 typedef CMP_RESULT (*PFNTREEDATACMP)(void *pdata_a, void *pdata_b);
 typedef BOOL (*PFNTREEDATADEL)(void *pdata);
+typedef void (*PFNGETDATAVALSTR)(void *pdata,char *dataval_strbuff,int strbufflen);
 
 
 #define TREE_ATTRIB_IGNORE_DUP  0x0001
@@ -80,13 +80,15 @@ typedef struct tree {
     uint32_t attrib;
     PFNTREEDATACMP pfncmp;
     PFNTREEDATADEL pfndel;
+    PFNGETDATAVALSTR pfngetdatastr;
 } TREE, *PTREE;
 
 
 
 PTREE tree_init(uint16_t attributes, 
                 PFNTREEDATACMP pfncmp, 
-                PFNTREEDATADEL pfndel);
+                PFNTREEDATADEL pfndel,
+                PFNGETDATAVALSTR pfngetdatastr);
 void tree_destroy(PTREE ptree);
 BOOL tree_insert(PTREE ptree, void *pdata);
 int32_t tree_height(PTREE ptree);

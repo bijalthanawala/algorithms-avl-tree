@@ -18,6 +18,10 @@
 ***********/   
 #define MAX_INT(a,b)  ((a) > (b) ? (a) : (b))
 
+/* Definitions/Constants
+*************************/
+#define DATA_STR_BUFF_LEN 100
+
 
 /* Prototypes
 ****************/   
@@ -25,13 +29,15 @@ BOOL is_balance_violated(PTREENODE pnode,BOOL isnewnodetoleft);
 BOOL tree_rotate(PTREE ptree, PTREENODE gp, PTREENODE p, PTREENODE c); 
 BOOL left_rotate(PTREE ptree, PTREENODE p, PTREENODE c); 
 BOOL right_rotate(PTREE ptree, PTREENODE p, PTREENODE c); 
+void default_getdatastr(void *pdata,char *dataval_strbuff,int strbufflen);
 
 
 /* Routines
 **************/   
 PTREE tree_init(uint16_t attributes, 
                 PFNTREEDATACMP pfncmp, 
-                PFNTREEDATADEL pfndel)
+                PFNTREEDATADEL pfndel,
+                PFNGETDATAVALSTR pfngetdatastr)
 {
     PTREE ptree = NULL;
 
@@ -47,6 +53,7 @@ PTREE tree_init(uint16_t attributes,
         ptree->count = 0;
         ptree->pfncmp = pfncmp;
         ptree->pfndel = pfndel;
+        ptree->pfngetdatastr = pfngetdatastr ? pfngetdatastr : default_getdatastr;
     }
 
     return ptree;
@@ -65,7 +72,7 @@ void tree_destroy_eachnode(PTREENODE pnode,
     tree_destroy_eachnode(GET_RCHILD(pnode),pfndel);
 
     if(pfndel) {
-        (*pfndel)(pnode->pdata);
+        (*pfndel)(pnode->data_ptr);
     }
 
     free(pnode);
@@ -99,7 +106,7 @@ BOOL tree_insert(PTREE ptree, void *pnewdata)
     fprintf(stderr,"Inserting %d\n",(int)pnewdata);
 
     /* Initialize the new node's metadata */
-    pnewnode->pdata = pnewdata;
+    pnewnode->data_ptr = pnewdata;
     pnewnode->height = 1;         
     pnewnode->pparent = NULL;
     pnewnode->nodetype = TREE_NODE_UNKNOWN;
@@ -120,7 +127,7 @@ BOOL tree_insert(PTREE ptree, void *pnewdata)
     insertpt = &ptree->proot;
     while(*insertpt) {
         pwalknode = *insertpt;
-        cmpresult = (*ptree->pfncmp)(pwalknode->pdata,pnewdata); 
+        cmpresult = (*ptree->pfncmp)(pwalknode->data_ptr,pnewdata); 
 
         /* Handle duplicate data */
         if(cmpresult == CMP_RESULT_A_B_SAME && 
@@ -198,33 +205,54 @@ int32_t tree_height(PTREE ptree)
 
 }
 
-
-void tree_preorder(FILE *fp, PTREENODE pnode)
+void tree_dump_preorder(PTREE ptree, FILE *fp, PTREENODE pnode)
 {
-   if(!pnode) return;
+  char nodedatastr[DATA_STR_BUFF_LEN];
+  char childdatastr[DATA_STR_BUFF_LEN];
+  char parentdatastr[DATA_STR_BUFF_LEN];
+
+  if(!pnode) return;
+
+  ptree->pfngetdatastr(pnode->data_ptr,nodedatastr,sizeof(nodedatastr));
 
   if(pnode->pchild[LCHILD]) {
-       fprintf(fp,"%d -> %d\n",(int32_t)pnode->pdata, (int32_t)pnode->pchild[LCHILD]->pdata);
+       ptree->pfngetdatastr(pnode->pchild[LCHILD]->data_ptr,
+                            childdatastr,
+                            sizeof(childdatastr));
+       fprintf(fp,"\"%s\" -> \"%s\"\n",nodedatastr,childdatastr);
    }
 
    if(pnode->pchild[RCHILD]) {
-        fprintf(fp,"%d -> %d\n",(int32_t)pnode->pdata, (int32_t)pnode->pchild[RCHILD]->pdata);
+        ptree->pfngetdatastr(pnode->pchild[RCHILD]->data_ptr,
+                             childdatastr,
+                             sizeof(childdatastr));
+        fprintf(fp,"\"%s\" -> \"%s\"\n",nodedatastr,childdatastr);
+   }
+
+   if(pnode->pparent) {
+     ptree->pfngetdatastr(pnode->pparent->data_ptr,
+                          parentdatastr,
+                          sizeof(parentdatastr));
+   }
+   else {
+       snprintf(parentdatastr,sizeof(parentdatastr),"NULL");
    }
 
    fprintf(fp,
-           "%d [label=\"%d\\nparent=%d\\nht=%d, lchild_ht=%d, rchild_ht=%d\"]\n",
-           (uint32_t)pnode->pdata,
-           (uint32_t)pnode->pdata,
-           (uint32_t)(pnode->pparent ? pnode->pparent->pdata : NULL),
+           "\"%s\" [label=\"%s\\nparent=%s\\nht=%d, lchild_ht=%d, rchild_ht=%d\"]\n",
+           nodedatastr,
+           nodedatastr,
+           parentdatastr,
            pnode->height,
            pnode->pchild[LCHILD] ? pnode->pchild[LCHILD]->height : 0, 
            pnode->pchild[RCHILD] ? pnode->pchild[RCHILD]->height : 0); 
 
-   if(pnode->pparent)
-     fprintf(fp,"%d -> %d\n",(int32_t)pnode->pdata,(int32_t)pnode->pparent->pdata);
+   if(pnode->pparent) {
+     fprintf(fp,"\"%s\" -> \"%s\"\n",nodedatastr,parentdatastr);
+   }
 
-   tree_preorder(fp, pnode->pchild[LCHILD]);
-   tree_preorder(fp, pnode->pchild[RCHILD]);
+   tree_dump_preorder(ptree, fp, pnode->pchild[LCHILD]);
+   tree_dump_preorder(ptree, fp, pnode->pchild[RCHILD]);
  
 }
 
@@ -233,7 +261,7 @@ int32_t tree_dump(PTREE ptree,char *filename)
    FILE *fp = fopen(filename,"w");
  
    fprintf(fp,"digraph avltree {\n"); 
-   tree_preorder(fp,ptree->proot); 
+   tree_dump_preorder(ptree,fp,ptree->proot);
    fprintf(fp,"}\n");
 
    fclose(fp);
@@ -265,8 +293,16 @@ BOOL is_balance_violated(PTREENODE pnode,BOOL isnewnodetoleft)
 
 BOOL tree_rotate(PTREE ptree, PTREENODE gp, PTREENODE p, PTREENODE c)
 {
-   fprintf(stderr,"Request to rotate: gp=%d p=%d c=%d\n",
-           (int)gp->pdata, (int)p->pdata, (int)c->pdata);
+   char gp_datastr[DATA_STR_BUFF_LEN];
+   char p_datastr[DATA_STR_BUFF_LEN];
+   char c_datastr[DATA_STR_BUFF_LEN];
+
+   ptree->pfngetdatastr(gp->data_ptr,gp_datastr,sizeof(gp_datastr));
+   ptree->pfngetdatastr(p->data_ptr ,p_datastr ,sizeof(p_datastr));
+   ptree->pfngetdatastr(c->data_ptr ,c_datastr ,sizeof(c_datastr));
+
+   fprintf(stderr,"Request to rotate: gp=%s p=%s c=%s\n",
+           gp_datastr, p_datastr, c_datastr);
 
    if((IS_THIS_LCHILD(p) && IS_THIS_LCHILD(c)) ||
       (IS_THIS_RCHILD(p) && IS_THIS_RCHILD(c))) {
@@ -301,9 +337,15 @@ BOOL tree_rotate(PTREE ptree, PTREENODE gp, PTREENODE p, PTREENODE c)
 BOOL left_rotate(PTREE ptree, PTREENODE p, PTREENODE c)
 {
     PTREENODE pwalknode = NULL;
+    char p_datastr[DATA_STR_BUFF_LEN];
+    char c_datastr[DATA_STR_BUFF_LEN];
 
-    fprintf(stderr,"Request to left rotate: p=%d c=%d\n",
-             (int)p->pdata, (int)c->pdata);
+   ptree->pfngetdatastr(p->data_ptr ,p_datastr ,sizeof(p_datastr));
+   ptree->pfngetdatastr(c->data_ptr ,c_datastr ,sizeof(c_datastr));
+
+
+    fprintf(stderr,"Request to left rotate: p=%s c=%s\n",
+            p_datastr,c_datastr);
 
 
     /* First promote the child */
@@ -358,9 +400,15 @@ BOOL left_rotate(PTREE ptree, PTREENODE p, PTREENODE c)
 BOOL right_rotate(PTREE ptree, PTREENODE p, PTREENODE c)
 {
     PTREENODE pwalknode = NULL;
+    char p_datastr[DATA_STR_BUFF_LEN];
+    char c_datastr[DATA_STR_BUFF_LEN];
 
-    fprintf(stderr,"Request to right rotate: p=%d c=%d\n",
-             (int)p->pdata, (int)c->pdata);
+    ptree->pfngetdatastr(p->data_ptr ,p_datastr ,sizeof(p_datastr));
+    ptree->pfngetdatastr(c->data_ptr ,c_datastr ,sizeof(c_datastr));
+
+
+    fprintf(stderr,"Request to right rotate: p=%s c=%s\n",
+            p_datastr,c_datastr);
 
 
     /* First promote the child */
@@ -409,4 +457,14 @@ BOOL right_rotate(PTREE ptree, PTREENODE p, PTREENODE c)
 
 
     return TRUE;
+}
+
+
+
+void default_getdatastr(void *pdata,char *dataval_strbuff,int strbufflen)
+{
+    snprintf(dataval_strbuff,
+             strbufflen,
+             "%p",
+             pdata);
 }

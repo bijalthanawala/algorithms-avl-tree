@@ -4,7 +4,6 @@ TODO List
 * Define and use errorcodes for tree_insert() to return
 * Make avltree.h look neater
 * Make avltree.h (header file facing the user) opaque
-* Remove the hack in tree_dump() (and other places) that prints the 'data' directly
 * Write extensive testcases
 * Formalize debug message control
 
@@ -12,3 +11,4 @@ Done
 ----
 * Implement tree_dump() that will write the tree to a DOT file for debugging
 * Remove old commented code
+* Remove the hack in tree_dump() (and other places) that prints the 'data' directly

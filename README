@@ -1,5 +1,6 @@
 Project: avl-tree
-Intention: Implement generic AVL tree
+Description: Implement generic AVL tree
+
 
 Current status:
 Simple testcases : PASS
@@ -7,5 +8,24 @@ Simple testcases : PASS
 Pending:
 Extensive testcases: TODO
 
+
+
+Regarding Usage:
+Refer to test/avltest.c for usage of these AVL libary calls.
+
+To build and run the test-program follow these steps:
+
+First build the test-program: make avltest
+
+Run the test-program: ./avltest
+
+To convert a .dot file to image file .png run: 
+dot -Tpng -o <name of the .png file>  <name of the .dot file>
+eg: dot -Tpng -o avltree.97.png avltree.97.dot
+[Note: You need to have graphviz package installed]
+
+View the .png file:
+evince <name of the .png file> OR use any image-viewer
+eg: evince avltree.97.png
 
 --  Read TODO file for more information --

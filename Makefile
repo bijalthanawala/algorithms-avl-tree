@@ -7,3 +7,4 @@ avltest: avltree test/avltest.c
 
 clean:
 	rm avltree.o test/avltest.o avltest
+	rm *.dot *.png
