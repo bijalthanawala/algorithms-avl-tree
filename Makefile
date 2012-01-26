@@ -6,5 +6,7 @@ avltest: avltree test/avltest.c
 	gcc -o avltest avltree.o test/avltest.o
 
 clean:
-	rm avltree.o test/avltest.o avltest
-	rm *.dot *.png
+	if [ -e avltest ];  then rm avltest;  fi
+	find -name "*.o"   -exec rm {} \;
+	find -name "*.dot" -exec rm {} \;
+	find -name "*.png" -exec rm {} \;

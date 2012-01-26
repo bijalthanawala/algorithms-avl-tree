@@ -25,15 +25,29 @@ void main()
     PTREE ptree = tree_init(0,cmp_int,NULL,getdatastr);
     int i;
     char filename[100];
+    int node_count = 0;
 
     for(i='z';i>='a';i--) {
-       tree_insert(ptree, (void *)i);
+       if(tree_insert(ptree, (void *)i))
+         node_count++;
+
        printf("After inserting data=%d, tree ht = %d\n",
                i,tree_height(ptree));
     sprintf(filename,"avltree.%d.dot",i);   
     tree_dump(ptree,filename);
     }
 
+
+    printf("AVL-TREE TEST CASE #1 "); 
+    printf("(Node Count Test)");
+    printf(":");
+    if(tree_node_count(ptree) == node_count){
+        printf(" PASSED");
+    }
+    else {
+        printf(" FAILED");
+    }
+    printf("\n");
 
     tree_destroy(ptree);
 

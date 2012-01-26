@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include "gnrcstack/gnrcstack.h"
 #include "avltree.h"
 
 
@@ -50,7 +51,7 @@ PTREE tree_init(uint16_t attributes,
     if(ptree) {
         ptree->proot = NULL;
         ptree->attrib = attributes;
-        ptree->count = 0;
+        ptree->node_count = 0;
         ptree->pfncmp = pfncmp;
         ptree->pfndel = pfndel;
         ptree->pfngetdatastr = pfngetdatastr ? pfngetdatastr : default_getdatastr;
@@ -117,7 +118,7 @@ BOOL tree_insert(PTREE ptree, void *pnewdata)
     if(! ptree->proot) {
         SET_ROOT(pnewnode);
         ptree->proot = pnewnode;
-        ptree->count = 1;
+        ptree->node_count = 1;
         pnewnode->height = 1;
         return TRUE;
     }
@@ -177,8 +178,11 @@ BOOL tree_insert(PTREE ptree, void *pnewdata)
     *insertpt = pnewnode; 
     pnewnode->pparent = pwalknode;
 
-    /* Ensure all three - gp, p and c are known incase 
-       balance factor was violated */
+    /* Record the count of nodes in the tree*/
+    ptree->node_count++;
+
+    /* Ensure all three - gp, p and c are known, in case 
+       the balance factor was violated */
     if((gp!=NULL) && (p!=NULL) && (c==NULL)){
             c = pnewnode;
     }
@@ -192,9 +196,10 @@ BOOL tree_insert(PTREE ptree, void *pnewdata)
     if(gp != NULL)
         tree_rotate(ptree,gp,p,c);
 
+    return TRUE;
 }
 
-int32_t tree_height(PTREE ptree)
+uint32_t tree_height(PTREE ptree)
 {
 
     if(ptree && ptree->proot) {
@@ -203,6 +208,12 @@ int32_t tree_height(PTREE ptree)
 
     return 0;
 
+}
+
+
+uint32_t tree_node_count(PTREE ptree)
+{
+    return (ptree ? ptree->node_count : 0);
 }
 
 void tree_dump_preorder(PTREE ptree, FILE *fp, PTREENODE pnode)
@@ -331,6 +342,8 @@ BOOL tree_rotate(PTREE ptree, PTREENODE gp, PTREENODE p, PTREENODE c)
        }
 
    }
+
+   return TRUE;
 } 
 
 

@@ -12,10 +12,6 @@
 
 #include <stdint.h>
 
-#define BOOL int16_t
-#define TRUE  ((BOOL)1)
-#define FALSE ((BOOL)0)
-
 #define NUMBER_CHILD_BINARY_TREE 2
 #define LCHILD 0
 #define RCHILD 1
@@ -76,7 +72,7 @@ typedef void (*PFNGETDATAVALSTR)(void *pdata,char *dataval_strbuff,int strbuffle
 
 typedef struct tree {
     PTREENODE proot;
-    uint32_t count;
+    uint32_t node_count;
     uint32_t attrib;
     PFNTREEDATACMP pfncmp;
     PFNTREEDATADEL pfndel;
@@ -91,7 +87,8 @@ PTREE tree_init(uint16_t attributes,
                 PFNGETDATAVALSTR pfngetdatastr);
 void tree_destroy(PTREE ptree);
 BOOL tree_insert(PTREE ptree, void *pdata);
-int32_t tree_height(PTREE ptree);
+uint32_t tree_height(PTREE ptree);
+uint32_t tree_node_count(PTREE ptree);
 int32_t tree_dump(PTREE ptree,char *filename);
 
 

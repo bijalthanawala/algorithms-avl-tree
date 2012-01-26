@@ -1,11 +1,14 @@
 TODO List
 ---------
-* ONGOING - Comment the code
+* Implement functionality to delete a node
+* Implement iterator
 * Define and use errorcodes for tree_insert() to return
 * Make avltree.h look neater
 * Make avltree.h (header file facing the user) opaque
-* Write extensive testcases
 * Formalize debug message control
+* Rewrite MAX_INT macro in the form of a function
+* ONGOING - Comment the code
+* ONGOING - Write extensive testcases
 
 Done
 ----
