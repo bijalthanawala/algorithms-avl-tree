@@ -60,6 +60,28 @@ void main()
     }
     printf("\n");
 
+    ptreeiter = tree_iter_getobj(ptree, ITER_TYPE_INORDER);
+    if(ptreeiter) {
+        printf("Inorder Result: ");
+        while(i = (int)tree_iter_getnext(ptreeiter)) {
+            printf("%c",i);
+        }
+        tree_iter_freeobj(ptreeiter);
+    }
+    printf("\n");
+
+    ptreeiter = tree_iter_getobj(ptree, ITER_TYPE_POSTORDER);
+    if(ptreeiter) {
+        printf("Postorder Result: ");
+        while(i = (int)tree_iter_getnext(ptreeiter)) {
+            printf("%c",i);
+        }
+        tree_iter_freeobj(ptreeiter);
+    }
+    printf("\n");
+
+
+
     tree_destroy(ptree);
 
 }

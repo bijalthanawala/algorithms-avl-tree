@@ -531,10 +531,10 @@ PTREENODE tree_iter_getnext(PTREE_ITER_OBJ piterobj)
         case ITER_TYPE_PREORDER:  return tree_iter_getnext_preorder(piterobj);
                                   break;
 
-        case ITER_TYPE_INORDER:   return tree_iter_getnext_preorder(piterobj);
+        case ITER_TYPE_INORDER:   return tree_iter_getnext_inorder(piterobj);
                                   break;
 
-        case ITER_TYPE_POSTORDER: return tree_iter_getnext_preorder(piterobj);
+        case ITER_TYPE_POSTORDER: return tree_iter_getnext_postorder(piterobj);
                                   break;
     }
 
@@ -554,16 +554,16 @@ PTREENODE tree_iter_getnext_preorder(PTREE_ITER_OBJ piterobj)
 
         piterobj->begun = TRUE;
         pnodeiter->pnode = piterobj->ptree->proot;
-        pnodeiter->state = ITER_STATE_DISCOVERED_SELF;
+        pnodeiter->state = ITER_STATE_PREORDER_DISCOVERED_SELF;
         gnrcstack_push(piterobj->pstack,pnodeiter);
         return pnodeiter->pnode->data_ptr;
     }
 
     while(pnodeiter = gnrcstack_top(piterobj->pstack))
     {
-        if(pnodeiter->state == ITER_STATE_DISCOVERED_SELF) {
+        if(pnodeiter->state == ITER_STATE_PREORDER_DISCOVERED_SELF) {
 
-            pnodeiter->state = ITER_STATE_LEFT_TRAVERSED;
+            pnodeiter->state = ITER_STATE_PREORDER_LEFT_TRAVERSED;
 
             if(pnodeiter->pnode->pchild[LCHILD]) {
 
@@ -572,15 +572,15 @@ PTREENODE tree_iter_getnext_preorder(PTREE_ITER_OBJ piterobj)
                     return NULL;
 
                 pchildnodeiter->pnode = pnodeiter->pnode->pchild[LCHILD];
-                pchildnodeiter->state = ITER_STATE_DISCOVERED_SELF;
+                pchildnodeiter->state = ITER_STATE_PREORDER_DISCOVERED_SELF;
                 gnrcstack_push(piterobj->pstack, pchildnodeiter);      
                 return pchildnodeiter->pnode->data_ptr;
             }
         }
 
-        if(pnodeiter->state == ITER_STATE_LEFT_TRAVERSED) {
+        if(pnodeiter->state == ITER_STATE_PREORDER_LEFT_TRAVERSED) {
 
-            pnodeiter->state = ITER_STATE_RIGHT_TRAVERSED;
+            pnodeiter->state = ITER_STATE_PREORDER_RIGHT_TRAVERSED;
 
             if(pnodeiter->pnode->pchild[RCHILD]) {
 
@@ -589,13 +589,13 @@ PTREENODE tree_iter_getnext_preorder(PTREE_ITER_OBJ piterobj)
                     return NULL;
 
                 pchildnodeiter->pnode = pnodeiter->pnode->pchild[RCHILD];
-                pchildnodeiter->state = ITER_STATE_DISCOVERED_SELF;
+                pchildnodeiter->state = ITER_STATE_PREORDER_DISCOVERED_SELF;
                 gnrcstack_push(piterobj->pstack, pchildnodeiter);      
                 return pchildnodeiter->pnode->data_ptr;
             }
         }
 
-        assert(pnodeiter->state == ITER_STATE_RIGHT_TRAVERSED); 
+        assert(pnodeiter->state == ITER_STATE_PREORDER_RIGHT_TRAVERSED); 
 
         gnrcstack_pop(piterobj->pstack);
     }
@@ -604,3 +604,154 @@ PTREENODE tree_iter_getnext_preorder(PTREE_ITER_OBJ piterobj)
 
 
 }
+
+
+PTREENODE tree_iter_getnext_inorder(PTREE_ITER_OBJ piterobj)
+{
+    PNODE_ITER pnodeiter = NULL;
+    PNODE_ITER pchildnodeiter = NULL;
+
+    if(!piterobj->begun) {
+
+        pnodeiter = calloc(sizeof(NODE_ITER),0);
+        if(!pnodeiter)
+            return NULL;
+
+        piterobj->begun = TRUE;
+        pnodeiter->pnode = piterobj->ptree->proot;
+        pnodeiter->state = ITER_STATE_INORDER_DISCOVERED_SELF;
+        gnrcstack_push(piterobj->pstack,pnodeiter);
+    }
+
+
+    while(pnodeiter = gnrcstack_top(piterobj->pstack)) 
+    {
+
+        if(pnodeiter->state == ITER_STATE_INORDER_LEFT_TRAVERSED) {
+            pnodeiter->state = ITER_STATE_INORDER_RIGHT_TO_BE_TRAVERSED;
+            return pnodeiter->pnode->data_ptr;
+        }
+
+
+        if(pnodeiter->state == ITER_STATE_INORDER_RIGHT_TO_BE_TRAVERSED) {
+
+            pnodeiter->state = ITER_STATE_INORDER_RIGHT_TRAVERSED;
+
+            if(pnodeiter->pnode->pchild[RCHILD]) {
+
+                pchildnodeiter = calloc(sizeof(NODE_ITER),0);
+                if(!pchildnodeiter)
+                    return NULL;
+
+                pchildnodeiter->pnode = pnodeiter->pnode->pchild[RCHILD];
+                pchildnodeiter->state = ITER_STATE_INORDER_DISCOVERED_SELF;
+                gnrcstack_push(piterobj->pstack, pchildnodeiter);     
+
+                pnodeiter = pchildnodeiter; 
+            }
+        }
+
+        if(pnodeiter->state == ITER_STATE_INORDER_DISCOVERED_SELF) {
+
+            pnodeiter->state = ITER_STATE_INORDER_LEFT_TRAVERSED;
+
+            while(pnodeiter->pnode->pchild[LCHILD]) {
+
+                pchildnodeiter = calloc(sizeof(NODE_ITER),0);
+                if(!pchildnodeiter)
+                    return NULL;
+
+                pchildnodeiter->pnode = pnodeiter->pnode->pchild[LCHILD];
+                pchildnodeiter->state = ITER_STATE_INORDER_LEFT_TRAVERSED;
+                gnrcstack_push(piterobj->pstack, pchildnodeiter);     
+
+                pnodeiter = pchildnodeiter; 
+            }
+        }
+
+
+        if(pnodeiter->state == ITER_STATE_INORDER_RIGHT_TRAVERSED) 
+            gnrcstack_pop(piterobj->pstack);
+    }
+
+    return NULL;
+
+}
+
+PTREENODE tree_iter_getnext_postorder(PTREE_ITER_OBJ piterobj)
+{
+    PNODE_ITER pnodeiter = NULL;
+    PNODE_ITER pchildnodeiter = NULL;
+
+    if(!piterobj->begun) {
+
+        pnodeiter = calloc(sizeof(NODE_ITER),0);
+        if(!pnodeiter)
+            return NULL;
+
+        piterobj->begun = TRUE;
+        pnodeiter->pnode = piterobj->ptree->proot;
+        pnodeiter->state = ITER_STATE_POSTORDER_DISCOVERED_SELF;
+        gnrcstack_push(piterobj->pstack,pnodeiter);
+    }
+
+
+    while(pnodeiter = gnrcstack_top(piterobj->pstack)) 
+    {
+
+        if(pnodeiter->state == ITER_STATE_POSTORDER_LEFT_TRAVERSED) {
+            pnodeiter->state = ITER_STATE_POSTORDER_RIGHT_TO_BE_TRAVERSED;
+        }
+
+
+        if(pnodeiter->state == ITER_STATE_POSTORDER_RIGHT_TO_BE_TRAVERSED) {
+
+            pnodeiter->state = ITER_STATE_POSTORDER_RIGHT_TRAVERSED;
+
+            if(pnodeiter->pnode->pchild[RCHILD]) {
+
+                pchildnodeiter = calloc(sizeof(NODE_ITER),0);
+                if(!pchildnodeiter)
+                    return NULL;
+
+                pchildnodeiter->pnode = pnodeiter->pnode->pchild[RCHILD];
+                pchildnodeiter->state = ITER_STATE_POSTORDER_DISCOVERED_SELF;
+                gnrcstack_push(piterobj->pstack, pchildnodeiter);     
+
+                pnodeiter = pchildnodeiter; 
+            }
+        }
+
+        if(pnodeiter->state == ITER_STATE_POSTORDER_DISCOVERED_SELF) {
+
+            pnodeiter->state = ITER_STATE_POSTORDER_LEFT_TRAVERSED;
+
+            while(pnodeiter->pnode->pchild[LCHILD]) {
+
+                pchildnodeiter = calloc(sizeof(NODE_ITER),0);
+                if(!pchildnodeiter)
+                    return NULL;
+
+                pchildnodeiter->pnode = pnodeiter->pnode->pchild[LCHILD];
+                pchildnodeiter->state = ITER_STATE_POSTORDER_LEFT_TRAVERSED;
+                gnrcstack_push(piterobj->pstack, pchildnodeiter);     
+
+                pnodeiter = pchildnodeiter; 
+            }
+        }
+
+
+        if(pnodeiter->state == ITER_STATE_POSTORDER_RIGHT_TRAVERSED) { 
+            pnodeiter->state = ITER_STATE_POSTORDER_NODE_POST_ORDER_DONE;
+            return pnodeiter->pnode->data_ptr;
+        }
+
+        if(pnodeiter->state == ITER_STATE_POSTORDER_NODE_POST_ORDER_DONE) {
+            gnrcstack_pop(piterobj->pstack);
+        }
+    }
+
+    return NULL;
+
+}
+

@@ -1,8 +1,6 @@
 TODO List
 ---------
 * Implement functionality to delete a node
-* Implement iterator - inorder
-* Implement iterator - postorder
 * Define and use errorcodes for tree_insert() to return
 * Make avltree.h look neater
 * Make avltree.h (header file facing the user) opaque
@@ -10,6 +8,7 @@ TODO List
 * Rewrite MAX_INT macro in the form of a function
 * ONGOING - Comment the code
 * ONGOING - Write extensive testcases
+* Implement recursive traversal (to test iterative traversal)
 
 Done
 ----
@@ -17,3 +16,5 @@ Done
 * Remove old commented code
 * Remove the hack in tree_dump() (and other places) that prints the 'data' directly
 * Implement iterator - preorder
+* Implement iterator - inorder
+* Implement iterator - postorder
