@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "gnrcstack/gnrcstack.h"
 #include "avltree.h"
 
 
@@ -32,6 +31,9 @@ BOOL left_rotate(PTREE ptree, PTREENODE p, PTREENODE c);
 BOOL right_rotate(PTREE ptree, PTREENODE p, PTREENODE c); 
 void default_getdatastr(void *pdata,char *dataval_strbuff,int strbufflen);
 
+PTREENODE tree_iter_getnext_preorder(PTREE_ITER_OBJ piterobj);
+PTREENODE tree_iter_getnext_inorder(PTREE_ITER_OBJ piterobj);
+PTREENODE tree_iter_getnext_postorder(PTREE_ITER_OBJ piterobj);
 
 /* Routines
 **************/   
@@ -480,4 +482,125 @@ void default_getdatastr(void *pdata,char *dataval_strbuff,int strbufflen)
              strbufflen,
              "%p",
              pdata);
+}
+
+void free_node_iter(PVOID pvoid)
+{
+    PNODE_ITER pnodeiter = (PNODE_ITER)pvoid;
+    free(pnodeiter);
+}
+
+
+PTREE_ITER_OBJ tree_iter_getobj(PTREE ptree, ITER_TYPE itertype)
+{
+    PTREE_ITER_OBJ piter = NULL;
+
+    piter = calloc(sizeof(TREE_ITER_OBJ),1);
+    if(! piter) {
+        return NULL;
+    }
+
+    piter->begun = FALSE;
+    piter->ptree = ptree;
+    piter->type = itertype;
+    piter->pstack = gnrcstack_create(free_node_iter);
+    if(! piter->pstack) {
+        free(piter);
+        return NULL;
+    }
+
+    return  piter;
+}
+
+void tree_iter_freeobj(PTREE_ITER_OBJ piterobj)
+{
+
+    if(piterobj) {
+
+        if(piterobj->pstack)
+           gnrcstack_destroy(piterobj->pstack);
+
+        free(piterobj);
+    }
+}
+
+PTREENODE tree_iter_getnext(PTREE_ITER_OBJ piterobj)
+{
+    switch(piterobj->type)
+    {
+        case ITER_TYPE_PREORDER:  return tree_iter_getnext_preorder(piterobj);
+                                  break;
+
+        case ITER_TYPE_INORDER:   return tree_iter_getnext_preorder(piterobj);
+                                  break;
+
+        case ITER_TYPE_POSTORDER: return tree_iter_getnext_preorder(piterobj);
+                                  break;
+    }
+
+    return NULL;
+}
+
+PTREENODE tree_iter_getnext_preorder(PTREE_ITER_OBJ piterobj)
+{
+    PNODE_ITER pnodeiter = NULL;
+    PNODE_ITER pchildnodeiter = NULL;
+
+    if(!piterobj->begun) {
+
+        pnodeiter = calloc(sizeof(NODE_ITER),0);
+        if(!pnodeiter)
+            return NULL;
+
+        piterobj->begun = TRUE;
+        pnodeiter->pnode = piterobj->ptree->proot;
+        pnodeiter->state = ITER_STATE_DISCOVERED_SELF;
+        gnrcstack_push(piterobj->pstack,pnodeiter);
+        return pnodeiter->pnode->data_ptr;
+    }
+
+    while(pnodeiter = gnrcstack_top(piterobj->pstack))
+    {
+        if(pnodeiter->state == ITER_STATE_DISCOVERED_SELF) {
+
+            pnodeiter->state = ITER_STATE_LEFT_TRAVERSED;
+
+            if(pnodeiter->pnode->pchild[LCHILD]) {
+
+                pchildnodeiter = calloc(sizeof(NODE_ITER),0);
+                if(!pchildnodeiter)
+                    return NULL;
+
+                pchildnodeiter->pnode = pnodeiter->pnode->pchild[LCHILD];
+                pchildnodeiter->state = ITER_STATE_DISCOVERED_SELF;
+                gnrcstack_push(piterobj->pstack, pchildnodeiter);      
+                return pchildnodeiter->pnode->data_ptr;
+            }
+        }
+
+        if(pnodeiter->state == ITER_STATE_LEFT_TRAVERSED) {
+
+            pnodeiter->state = ITER_STATE_RIGHT_TRAVERSED;
+
+            if(pnodeiter->pnode->pchild[RCHILD]) {
+
+                pchildnodeiter = calloc(sizeof(NODE_ITER),0);
+                if(!pchildnodeiter)
+                    return NULL;
+
+                pchildnodeiter->pnode = pnodeiter->pnode->pchild[RCHILD];
+                pchildnodeiter->state = ITER_STATE_DISCOVERED_SELF;
+                gnrcstack_push(piterobj->pstack, pchildnodeiter);      
+                return pchildnodeiter->pnode->data_ptr;
+            }
+        }
+
+        assert(pnodeiter->state == ITER_STATE_RIGHT_TRAVERSED); 
+
+        gnrcstack_pop(piterobj->pstack);
+    }
+
+    return NULL;
+
+
 }

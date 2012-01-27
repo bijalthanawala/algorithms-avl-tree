@@ -30,6 +30,7 @@ typedef PFN_LISTELEMENT_DEL PFN_STACKELEMENT_DEL;
 gnrcstack* gnrcstack_create(PFN_STACKELEMENT_DEL pfndel);
 void gnrcstack_destroy(gnrcstack *pstack);
 BOOL gnrcstack_push(gnrcstack* pstack, void *pvoid);
+void *gnrcstack_top(gnrcstack* pstack);
 void *gnrcstack_pop(gnrcstack* pstack);
 
 

@@ -11,6 +11,8 @@
 #define AVL_TREE_INCLUDED
 
 #include <stdint.h>
+#include "common/common_types.h"
+#include "gnrcstack/gnrcstack.h"
 
 #define NUMBER_CHILD_BINARY_TREE 2
 #define LCHILD 0
@@ -79,7 +81,29 @@ typedef struct tree {
     PFNGETDATAVALSTR pfngetdatastr;
 } TREE, *PTREE;
 
+typedef enum {
+  ITER_STATE_DISCOVERED_SELF=0x9001,    
+  ITER_STATE_LEFT_TRAVERSED=0x9002,
+  ITER_STATE_RIGHT_TRAVERSED=0x9004
+} ITER_STATE;
 
+typedef enum {
+    ITER_TYPE_PREORDER,
+    ITER_TYPE_INORDER,
+    ITER_TYPE_POSTORDER
+} ITER_TYPE;
+
+typedef struct {
+    PTREENODE pnode;
+    ITER_STATE state;
+} NODE_ITER, *PNODE_ITER;
+
+typedef struct {
+    BOOL begun;
+    PTREE ptree;
+    ITER_TYPE type;
+    gnrcstack *pstack;
+} TREE_ITER_OBJ, *PTREE_ITER_OBJ;      
 
 PTREE tree_init(uint16_t attributes, 
                 PFNTREEDATACMP pfncmp, 
@@ -89,6 +113,9 @@ void tree_destroy(PTREE ptree);
 BOOL tree_insert(PTREE ptree, void *pdata);
 uint32_t tree_height(PTREE ptree);
 uint32_t tree_node_count(PTREE ptree);
+PTREE_ITER_OBJ tree_iter_getobj(PTREE ptree, ITER_TYPE itertype);
+void tree_iter_freeobj(PTREE_ITER_OBJ piterobj);
+PTREENODE tree_iter_getnext(PTREE_ITER_OBJ piterobj);
 int32_t tree_dump(PTREE ptree,char *filename);
 
 

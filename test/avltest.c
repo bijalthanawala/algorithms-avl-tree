@@ -23,6 +23,7 @@ void main()
 {
 
     PTREE ptree = tree_init(0,cmp_int,NULL,getdatastr);
+    PTREE_ITER_OBJ ptreeiter = NULL;
     int i;
     char filename[100];
     int node_count = 0;
@@ -46,6 +47,16 @@ void main()
     }
     else {
         printf(" FAILED");
+    }
+    printf("\n");
+
+    ptreeiter = tree_iter_getobj(ptree, ITER_TYPE_PREORDER);
+    if(ptreeiter) {
+        printf("Preorder Result: ");
+        while(i = (int)tree_iter_getnext(ptreeiter)) {
+            printf("%c",i);
+        }
+        tree_iter_freeobj(ptreeiter);
     }
     printf("\n");
 

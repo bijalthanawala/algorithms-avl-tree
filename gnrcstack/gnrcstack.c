@@ -37,6 +37,15 @@ BOOL gnrcstack_push(gnrcstack* pstack, void *pvoid)
 
 
 
+void *gnrcstack_top(gnrcstack* pstack)
+{
+    void *payload = gnrclist_getfirst(pstack);
+
+    return payload;
+}
+
+
+
 void *gnrcstack_pop(gnrcstack* pstack)
 {
     void *payload = gnrclist_getfirst(pstack);

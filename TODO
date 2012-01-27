@@ -1,7 +1,8 @@
 TODO List
 ---------
 * Implement functionality to delete a node
-* Implement iterator
+* Implement iterator - inorder
+* Implement iterator - postorder
 * Define and use errorcodes for tree_insert() to return
 * Make avltree.h look neater
 * Make avltree.h (header file facing the user) opaque
@@ -15,3 +16,4 @@ Done
 * Implement tree_dump() that will write the tree to a DOT file for debugging
 * Remove old commented code
 * Remove the hack in tree_dump() (and other places) that prints the 'data' directly
+* Implement iterator - preorder
